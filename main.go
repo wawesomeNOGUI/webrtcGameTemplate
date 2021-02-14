@@ -13,7 +13,9 @@ import (
 	"github.com/wawesomeNOGUI/webrtcGamerServer/internal/signal"
 )
 
-var upgrader = websocket.Upgrader{} // use default options for upgrader
+var upgrader = websocket.Upgrader{
+							 		CheckOrigin: func(r *http.Request) bool { return true },
+							 }
 
 func echo(w http.ResponseWriter, r *http.Request) {
         c, err := upgrader.Upgrade(w, r, nil)
@@ -70,7 +72,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 					var message int
 
-					INFINITE:
+					for{
 						time.Sleep(50) //50 nanoseconds
 						message++ //add 1 to message
 						//fmt.Printf("Sending '%s'\n", message)
@@ -79,10 +81,11 @@ func echo(w http.ResponseWriter, r *http.Request) {
 						// Send the message as text
 						sendErr := dataChannel.SendText(strconv.Itoa(message))    //make new byte slice with message as the only field
 						if sendErr != nil {
-							panic(sendErr)
+							fmt.Println("data send err", sendErr)
+							break
 						}
+					}
 
-						goto INFINITE
 				})
 
 				// Register text message handling
@@ -138,6 +141,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 //=====================Trickle ICE==============================================
 				//Make a new struct to use for trickle ICE candidates
 				var trickleCandidate webrtc.ICECandidateInit
+				var leftBracket uint8 = 123   //123 = ascii value of "{"
 
 				for{
 					_, message, err2 := c.ReadMessage() //ReadMessage blocks until message received
@@ -145,17 +149,20 @@ func echo(w http.ResponseWriter, r *http.Request) {
 									fmt.Println("read:", err)
 					}
 
-					err := json.Unmarshal(message, &trickleCandidate)
-					if err != nil {
-						fmt.Println("errorUnmarshal:", err)
+					if message[0] == leftBracket {
+							err := json.Unmarshal(message, &trickleCandidate)
+							if err != nil {
+								fmt.Println("errorUnmarshal:", err)
+							}
+
+							fmt.Println(trickleCandidate)
+
+							err = peerConnection.AddICECandidate(trickleCandidate)
+							if err != nil {
+								fmt.Println("errorAddICE:", err)
+							}
 					}
 
-					//fmt.Println(message)
-
-					err = peerConnection.AddICECandidate(trickleCandidate)
-					if err != nil {
-						fmt.Println("errorAddICE:", err)
-					}
 				}
 
 }
