@@ -2,11 +2,11 @@
 
 <html>
 
-
+<!--
 Golang base64 Session Description: <textarea id="remoteSessionDescription"></textarea> <br/>
 <button onclick="window.startSession()"> Start Session </button> <br />
 Browser base64 Session Description <textarea id="localSessionDescription" readonly="true"></textarea> <br />
-
+-->
 <br />
 
 Message: <textarea id="message">This is my DataChannel message!</textarea> <br/>
@@ -15,62 +15,103 @@ Message: <textarea id="message">This is my DataChannel message!</textarea> <br/>
 <div id="logs"></div>
 
 <script>
-  /* eslint-env browser */
 
-let pc = new RTCPeerConnection({
-  iceServers: [
-    {
-      urls: 'stun:stun.l.google.com:19302'
+var ws;
+
+window.addEventListener("load", function(evt) {
+  ws = new WebSocket("ws://localhost:80/echo");  //address to connect to, /echo triggers go echo function
+
+  ws.onopen = function(evt) {
+      console.log("OPEN");
+  }
+  ws.onclose = function(evt) {
+      console.log("CLOSE");
+      ws = null;
+  }
+  ws.onmessage = function(evt) {
+      console.log("RESPONSE: " + evt.data);
+      //we're expecting the first websocket message to be the server's SDP
+      //so we'll go ahead and start the WEBRTC session with that SDP
+      window.startSession(evt.data)
+  }
+  ws.onerror = function(evt) {
+      console.log("ERROR: " + evt.data);
+  }
+
+//=====================WEBRTC===========================
+
+  const pc = new RTCPeerConnection({
+    iceServers: [
+      {
+        urls: 'stun:stun.l.google.com:19302'
+      }
+    ]
+  })
+  let log = msg => {
+    document.getElementById('logs').innerHTML += msg + '<br>'
+  }
+
+  var sends = 0;
+
+  pc.onsignalingstatechange = e => log(pc.signalingState)
+  pc.oniceconnectionstatechange = e => log(pc.iceConnectionState)
+  pc.onicecandidate = event => {
+    if(sends == 0){
+      //Send the original SDP, we'll send additional ice candidates from the
+      //onicecandidate event handler (trickle ICE)
+      ws.send( btoa(JSON.stringify(pc.localDescription)) )
+      console.log(pc.LocalDescription)
+
+      sends = 1
     }
-  ]
+    //console.log(event.candidate)
+    ws.send(JSON.stringify(event.candidate))
+  }
+
+
+
+  var previousData = 0;
+
+  pc.ondatachannel = e => {
+    let dc = e.channel
+    log('New DataChannel ' + dc.label)
+    dc.onclose = () => console.log('dc has closed')
+    dc.onopen = () => console.log('dc has opened')
+    dc.onmessage = function(e){
+      //log(`Message from DataChannel '${dc.label}' payload '${e.data}'`)
+      if(e.data - previousData != 1){
+        log("Unordered or lostData!")
+        log(previousData)
+        log(e.data)
+      }
+      previousData = e.data;
+    }
+    window.sendMessage = () => {
+      let message = document.getElementById('message').value
+      if (message === '') {
+        return alert('Message must not be empty')
+      }
+
+      dc.send(message)
+    }
+  }
+
+
+
+  window.startSession = (e) => {
+    let sd = e;
+    if (sd === '') {
+      return alert('Session Description must not be empty')
+    }
+
+    pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(atob(sd)))).catch(log)
+    console.log("Pog")
+    pc.createAnswer().then(d => pc.setLocalDescription(d)).catch(log)
+
+  }
+
 })
-let log = msg => {
-  document.getElementById('logs').innerHTML += msg + '<br>'
-}
 
-pc.onsignalingstatechange = e => log(pc.signalingState)
-pc.oniceconnectionstatechange = e => log(pc.iceConnectionState)
-pc.onicecandidate = event => {
-  if (event.candidate === null) {
-    document.getElementById('localSessionDescription').value = btoa(JSON.stringify(pc.localDescription))
-  }
-}
-
-var previousData = 0;
-
-pc.ondatachannel = e => {
-  let dc = e.channel
-  log('New DataChannel ' + dc.label)
-  dc.onclose = () => console.log('dc has closed')
-  dc.onopen = () => console.log('dc has opened')
-  dc.onmessage = function(e){
-    //log(`Message from DataChannel '${dc.label}' payload '${e.data}'`)
-    if(e.data - previousData != 1){
-      log("Unordered or lostData!")
-      log(previousData)
-      log(e.data)
-    }
-    previousData = e.data;
-  }
-  window.sendMessage = () => {
-    let message = document.getElementById('message').value
-    if (message === '') {
-      return alert('Message must not be empty')
-    }
-
-    dc.send(message)
-  }
-}
-
-window.startSession = () => {
-  let sd = document.getElementById('remoteSessionDescription').value
-  if (sd === '') {
-    return alert('Session Description must not be empty')
-  }
-
-  pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(atob(sd)))).catch(log)
-  pc.createAnswer().then(d => pc.setLocalDescription(d)).catch(log)
-}
 
 </script>
 

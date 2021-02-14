@@ -5,6 +5,7 @@ import (
 	"time"
 	"strconv"
 	"net/http"
+	"encoding/json"
 
 	"github.com/gorilla/websocket"
 
@@ -117,7 +118,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
                 fmt.Println("write:", err)
         }
 
-				//Wait for the browser to return an answer (its SDP)
+				//Wait for the browser to send an answer (its SDP)
         msgType, message, err2 := c.ReadMessage() //ReadMessage blocks until message received
         if err2 != nil {
                 fmt.Println("read:", err)
@@ -133,6 +134,30 @@ func echo(w http.ResponseWriter, r *http.Request) {
         if err != nil {
                 panic(err)
         }
+
+//=====================Trickle ICE==============================================
+				//Make a new struct to use for trickle ICE candidates
+				var trickleCandidate webrtc.ICECandidateInit
+
+				for{
+					_, message, err2 := c.ReadMessage() //ReadMessage blocks until message received
+					if err2 != nil {
+									fmt.Println("read:", err)
+					}
+
+					err := json.Unmarshal(message, &trickleCandidate)
+					if err != nil {
+						fmt.Println("errorUnmarshal:", err)
+					}
+
+					//fmt.Println(message)
+
+					err = peerConnection.AddICECandidate(trickleCandidate)
+					if err != nil {
+						fmt.Println("errorAddICE:", err)
+					}
+				}
+
 }
 				//WEBRTC connection made!
 
