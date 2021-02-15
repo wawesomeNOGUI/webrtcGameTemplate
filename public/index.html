@@ -16,7 +16,12 @@ Message: <textarea id="message">This is my DataChannel message!</textarea> <br/>
 
 <script>
 
+let log = msg => {
+  document.getElementById('logs').innerHTML += msg + '<br>'
+}
+
 var ws;
+
 
 window.addEventListener("load", function(evt) {
   ws = new WebSocket("ws://162.200.58.171:80/echo");  //address to connect to, /echo triggers go echo function
@@ -47,9 +52,7 @@ window.addEventListener("load", function(evt) {
       }
     ]
   })
-  let log = msg => {
-    document.getElementById('logs').innerHTML += msg + '<br>'
-  }
+
 
   var sends = 0;
 
@@ -71,6 +74,15 @@ window.addEventListener("load", function(evt) {
 
 
   var previousData = 0;
+  var numMessages = 0;
+
+  function howManyMessages(){
+    log(numMessages + " Messages Received");
+    console.log("hey");
+  }
+
+  setInterval(howManyMessages, 10000);
+
 
   pc.ondatachannel = e => {
     let dc = e.channel
@@ -78,6 +90,7 @@ window.addEventListener("load", function(evt) {
     dc.onclose = () => console.log('dc has closed')
     dc.onopen = () => console.log('dc has opened')
     dc.onmessage = function(e){
+      numMessages++;
       //log(`Message from DataChannel '${dc.label}' payload '${e.data}'`)
       if(e.data - previousData != 1){
         log("Unordered or lostData!")
@@ -111,6 +124,7 @@ window.addEventListener("load", function(evt) {
   }
 
 })
+
 
 
 </script>
