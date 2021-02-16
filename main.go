@@ -42,11 +42,16 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	//Setup dataChannel to act like UDP (unordered, no retransmits) with the
-	//DataChannelInit struct
+	//Setup dataChannel to act like UDP with ordered messages (no retransmits)
+	//with the DataChannelInit struct
 	var udpPls webrtc.DataChannelInit
 	var retransmits uint16 = 0
-	var ordered = false
+	var ordered = true           //DataChannel will drop any messages older than
+															 //the most recent one received if ordered = true
+															 //This is nice so we can always assume client
+															 //side that the message received from the server
+															 //is the most recent update, and not have to
+															 //implement logic for handling old messages
 
 	udpPls.Ordered = &ordered
 	udpPls.MaxRetransmits = &retransmits
