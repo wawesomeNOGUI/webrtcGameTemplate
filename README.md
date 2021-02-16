@@ -1,7 +1,7 @@
 # WebRTCGame
 A template for making real time online games with web browsers as clients.
 
-The biggest challenge with making real time online browser games (AKA .io games) is that there is no way to directly send a UDP packet to a browser client.
+The biggest challenge with making real time online browser games (AKA .io games) is that there is no way to send an arbitray UDP packet to a browser client.
 WebRTC solves this problem by allowing you to make a secure connection with browser clients and then send packets acting exactly like UDP to them.
 These packets are unordered, unreliable SCTP packets.
 
