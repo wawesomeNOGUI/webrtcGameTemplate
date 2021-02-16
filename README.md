@@ -14,8 +14,7 @@ Send unreliable game state updates across the network to browser clients using t
 # Librarys Used
 Thank you to:
 - [Pion](pion.ly)
-  For the wonderful WebRTC libray in Go!
-  
+  For the wonderful WebRTC library in Go!
 - [Gorilla/Websocket](https://github.com/gorilla/websocket)
-  For the wonderful websockets libray in Go!
+  For the wonderful websockets library in Go!
 
