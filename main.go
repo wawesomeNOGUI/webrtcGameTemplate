@@ -48,7 +48,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	var retransmits uint16 = 0
 
 	//DataChannel will drop any messages older than
-	//the most recent one received if ordered = true
+	//the most recent one received if ordered = true && retransmits = 0
 	//This is nice so we can always assume client
 	//side that the message received from the server
 	//is the most recent update, and not have to
