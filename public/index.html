@@ -16,6 +16,13 @@ Message: <textarea id="message">This is my DataChannel message!</textarea> <br/>
 
 <script>
 
+//=======================Global DataChannel Vars================================
+var UDPChan;
+var TCPChan;
+//==============================================================================
+
+
+
 let log = msg => {
   document.getElementById('logs').innerHTML += msg + '<br>'
 }
@@ -77,36 +84,54 @@ window.addEventListener("load", function(evt) {
   var numMessages = 0;
 
   function howManyMessages(){
-    log(numMessages + " Messages Received");
-    console.log("hey");
+    console.log(numMessages + " Messages Received");
   }
 
   setInterval(howManyMessages, 10000);
 
-
   pc.ondatachannel = e => {
-    let dc = e.channel
-    log('New DataChannel ' + dc.label)
-    dc.onclose = () => console.log('dc has closed')
-    dc.onopen = () => console.log('dc has opened')
-    dc.onmessage = function(e){
-      numMessages++;
-      //log(`Message from DataChannel '${dc.label}' payload '${e.data}'`)
-      if(e.data - previousData != 1){
-        log("Unordered or lostData!")
-        log(previousData)
-        log(e.data)
-      }
-      previousData = e.data;
-    }
-    window.sendMessage = () => {
-      let message = document.getElementById('message').value
-      if (message === '') {
-        return alert('Message must not be empty')
-      }
 
-      dc.send(message)
-    }
+        if(e.channel.label == "UDP"){
+          UDPChan = e.channel;
+          log('New DataChannel ' + UDPChan.label);
+          log("Ordered: " + UDPChan.ordered);
+          log("MaxRetransmits: " + UDPChan.maxRetransmits);
+          log("\n");
+          UDPChan.onclose = () => console.log(UDPChan.label + ' has closed');
+          UDPChan.onopen = () => console.log(UDPChan.label + ' has opened');
+
+          UDPChan.onmessage = function(e){
+              numMessages++;
+              //log(`Message from DataChannel '${UDPChan.label}' payload '${e.data}'`)
+              if(e.data - previousData != 1){
+                log("Unordered or lostData!")
+                log(previousData)
+                log(e.data)
+              }
+              previousData = e.data;
+          }
+
+        }else if(e.channel.label == "TCP"){
+          TCPChan = e.channel;
+          log('New DataChannel ' + TCPChan.label);
+          log("Ordered: " + TCPChan.ordered);
+          log("MaxRetransmits: " + TCPChan.maxRetransmits);
+          log("\n");
+          TCPChan.onclose = () => console.log(TCPChan.label + ' has closed');
+          TCPChan.onopen = () => console.log(TCPChan.label + ' has opened');
+          TCPChan.onmessage = function(e){};
+
+          window.sendMessage = () => {
+            let message = document.getElementById('message').value
+            if (message === '') {
+              return alert('Message must not be empty')
+            }
+
+            TCPChan.send(message)
+          }
+        }
+
+
   }
 
 

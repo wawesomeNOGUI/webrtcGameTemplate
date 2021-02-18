@@ -58,8 +58,14 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	udpPls.Ordered = &ordered
 	udpPls.MaxRetransmits = &retransmits
 
-	// Create a datachannel with label 'data' and options udpPls
-	dataChannel, err := peerConnection.CreateDataChannel("data", &udpPls)
+	// Create a datachannel with label 'UDP' and options udpPls
+	dataChannel, err := peerConnection.CreateDataChannel("UDP", &udpPls)
+	if err != nil {
+		panic(err)
+	}
+
+	//Create a reliable datachannel with label "TCP" for all other communications
+	reliableChannel, err := peerConnection.CreateDataChannel("TCP", nil)
 	if err != nil {
 		panic(err)
 	}
@@ -70,6 +76,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("ICE Connection State has changed: %s\n", connectionState.String())
 	})
 
+//====================No retransmits, ordered dataChannel=======================
 	// Register channel opening handling
 	dataChannel.OnOpen(func() {
 		fmt.Printf("Data channel '%s'-'%d' open. Random messages will now be sent to any connected DataChannels\n", dataChannel.Label(), dataChannel.ID())
@@ -95,6 +102,37 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	dataChannel.OnMessage(func(msg webrtc.DataChannelMessage) {
 		fmt.Printf("Message from DataChannel '%s': '%s'\n", dataChannel.Label(), string(msg.Data))
 	})
+
+//==============================================================================
+
+//=========================Reliable DataChannel=================================
+	// Register channel opening handling
+	reliableChannel.OnOpen(func() {
+		fmt.Printf("Data channel '%s'-'%d' open. Random messages will now be sent to any connected DataChannels\n", dataChannel.Label(), dataChannel.ID())
+
+		var message int
+
+		for {
+			time.Sleep(50) //50 nanoseconds
+			message++      //add 1 to message
+			//fmt.Printf("Sending '%s'\n", message)
+
+			// Send the message as text
+			sendErr := reliableChannel.SendText(strconv.Itoa(message)) //make new byte slice with message as the only field
+			if sendErr != nil {
+				fmt.Println("data send err", sendErr)
+				break
+			}
+		}
+
+	})
+
+	// Register text message handling
+	reliableChannel.OnMessage(func(msg webrtc.DataChannelMessage) {
+		fmt.Printf("Message from DataChannel '%s': '%s'\n", reliableChannel.Label(), string(msg.Data))
+	})
+
+//==============================================================================
 
 	// Create an offer to send to the browser
 	offer, err := peerConnection.CreateOffer(nil)
