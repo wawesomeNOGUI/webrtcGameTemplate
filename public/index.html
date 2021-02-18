@@ -2,30 +2,21 @@
 
 <html>
 
-<!--
-Golang base64 Session Description: <textarea id="remoteSessionDescription"></textarea> <br/>
-<button onclick="window.startSession()"> Start Session </button> <br />
-Browser base64 Session Description <textarea id="localSessionDescription" readonly="true"></textarea> <br />
--->
-<br />
+<br/>
 
 Message: <textarea id="message">This is my DataChannel message!</textarea> <br/>
 <button onclick="window.sendMessage()"> Send Message </button> <br />
 
-<div id="logs"></div>
+<script src="game.js"></script>
 
 <script>
-
 //=======================Global DataChannel Vars================================
-var UDPChan;
-var TCPChan;
+  var UDPChan;
+  var TCPChan;
 //==============================================================================
+</script>
 
-
-
-let log = msg => {
-  document.getElementById('logs').innerHTML += msg + '<br>'
-}
+<script>
 
 var ws;
 
@@ -63,8 +54,8 @@ window.addEventListener("load", function(evt) {
 
   var sends = 0;
 
-  pc.onsignalingstatechange = e => log(pc.signalingState)
-  pc.oniceconnectionstatechange = e => log(pc.iceConnectionState)
+  pc.onsignalingstatechange = e => console.log(pc.signalingState)
+  pc.oniceconnectionstatechange = e => console.log(pc.iceConnectionState)
   pc.onicecandidate = event => {
     if(sends == 0){
       //Send the original SDP, we'll send additional ice candidates from the
@@ -93,10 +84,10 @@ window.addEventListener("load", function(evt) {
 
         if(e.channel.label == "UDP"){
           UDPChan = e.channel;
-          log('New DataChannel ' + UDPChan.label);
-          log("Ordered: " + UDPChan.ordered);
-          log("MaxRetransmits: " + UDPChan.maxRetransmits);
-          log("\n");
+          console.log('New DataChannel ' + UDPChan.label);
+          console.log("Ordered: " + UDPChan.ordered);
+          console.log("MaxRetransmits: " + UDPChan.maxRetransmits);
+          console.log("\n");
           UDPChan.onclose = () => console.log(UDPChan.label + ' has closed');
           UDPChan.onopen = () => console.log(UDPChan.label + ' has opened');
 
@@ -104,19 +95,19 @@ window.addEventListener("load", function(evt) {
               numMessages++;
               //log(`Message from DataChannel '${UDPChan.label}' payload '${e.data}'`)
               if(e.data - previousData != 1){
-                log("Unordered or lostData!")
-                log(previousData)
-                log(e.data)
+                console.log("Unordered or lostData!")
+                console.log(previousData)
+                console.log(e.data)
               }
               previousData = e.data;
           }
 
         }else if(e.channel.label == "TCP"){
           TCPChan = e.channel;
-          log('New DataChannel ' + TCPChan.label);
-          log("Ordered: " + TCPChan.ordered);
-          log("MaxRetransmits: " + TCPChan.maxRetransmits);
-          log("\n");
+          console.log('New DataChannel ' + TCPChan.label);
+          console.log("Ordered: " + TCPChan.ordered);
+          console.log("MaxRetransmits: " + TCPChan.maxRetransmits);
+          console.log("\n");
           TCPChan.onclose = () => console.log(TCPChan.label + ' has closed');
           TCPChan.onopen = () => console.log(TCPChan.label + ' has opened');
           TCPChan.onmessage = function(e){};
@@ -142,9 +133,9 @@ window.addEventListener("load", function(evt) {
       return alert('Session Description must not be empty')
     }
 
-    pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(atob(sd)))).catch(log)
+    pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(atob(sd)))).catch(console.log)
     console.log("Pog")
-    pc.createAnswer().then(d => pc.setLocalDescription(d)).catch(log)
+    pc.createAnswer().then(d => pc.setLocalDescription(d)).catch(console.log)
 
   }
 

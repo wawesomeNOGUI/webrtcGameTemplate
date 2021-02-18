@@ -6,6 +6,9 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"sync"
+	"reflect"
+	//"encoding/binary"
 
 	"github.com/gorilla/websocket"
 
@@ -25,6 +28,9 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	}
 	defer c.Close()
 	fmt.Println("User connected from: ", c.RemoteAddr())
+
+	//===========This Player's Variables===================
+	var playerTag string
 
 	//===========WEBRTC====================================
 	// Prepare the configuration
@@ -74,6 +80,21 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	// This will notify you when the peer has connected/disconnected
 	peerConnection.OnICEConnectionStateChange(func(connectionState webrtc.ICEConnectionState) {
 		fmt.Printf("ICE Connection State has changed: %s\n", connectionState.String())
+
+		//3 = ICEConnectionStateConnected
+		if connectionState == 3 {
+			//Store a new x and y for this player
+			NumberOfPlayers++
+			playerTag = string(NumberOfPlayers)
+			x := playerTag + "X"
+			y := playerTag + "Y"
+			Updates.Store(x, 0)
+			Updates.Store(y, 0)
+		}else if connectionState == 5 || connectionState == 6 || connectionState == 7{
+			Updates.Delete(playerTag + "X")
+			Updates.Delete(playerTag + "Y")
+			fmt.Println("Deleted Player")
+		}
 	})
 
 //====================No retransmits, ordered dataChannel=======================
@@ -84,7 +105,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		var message int
 
 		for {
-			time.Sleep(50) //50 nanoseconds
+			time.Sleep(time.Second) //50 nanoseconds
 			message++      //add 1 to message
 			//fmt.Printf("Sending '%s'\n", message)
 
@@ -108,28 +129,33 @@ func echo(w http.ResponseWriter, r *http.Request) {
 //=========================Reliable DataChannel=================================
 	// Register channel opening handling
 	reliableChannel.OnOpen(func() {
-		fmt.Printf("Data channel '%s'-'%d' open. Random messages will now be sent to any connected DataChannels\n", dataChannel.Label(), dataChannel.ID())
 
-		var message int
+			//sendErr := reliableChannel.SendText(strconv.Itoa(message)) //make new byte slice with message as the only field
 
-		for {
-			time.Sleep(50) //50 nanoseconds
-			message++      //add 1 to message
-			//fmt.Printf("Sending '%s'\n", message)
-
-			// Send the message as text
-			sendErr := reliableChannel.SendText(strconv.Itoa(message)) //make new byte slice with message as the only field
-			if sendErr != nil {
-				fmt.Println("data send err", sendErr)
-				break
-			}
-		}
 
 	})
 
-	// Register text message handling
+	// Register message handling (Data all served as a bytes slice []byte)
+	// for user controls
 	reliableChannel.OnMessage(func(msg webrtc.DataChannelMessage) {
-		fmt.Printf("Message from DataChannel '%s': '%s'\n", reliableChannel.Label(), string(msg.Data))
+		//fmt.Printf("Message from DataChannel '%s': '%s'\n", reliableChannel.Label(), string(msg.Data))
+
+		//fmt.Println(msg.Data)
+		if msg.Data[0] == 88 {   //88 = "X"
+			temp, err := strconv.Atoi( string(msg.Data[1:]) );
+				if err != nil{
+					fmt.Println(err)
+				}
+			fmt.Println(reflect.TypeOf(temp))
+			Updates.Store( playerTag + "X", temp )
+		}else if msg.Data[0] == 89 {  //89 = "Y"
+		 temp, err := strconv.Atoi( string(msg.Data[1:]) );
+				if err != nil{
+					fmt.Println(err)
+				}
+			fmt.Println(temp)
+			Updates.Store( playerTag + "Y", temp )
+		}
 	})
 
 //==============================================================================
@@ -190,6 +216,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("read:", err)
 		}
 
+		//If staement to make sure we aren't adding websocket error messages to ICE
 		if message[0] == leftBracket {
 			err := json.Unmarshal(message, &trickleCandidate)
 			if err != nil {
@@ -210,7 +237,12 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 //WEBRTC connection made!
 
+//Updates Map
+var Updates sync.Map
+var NumberOfPlayers int
+
 func main() {
+
 
 	fileServer := http.FileServer(http.Dir("./public"))
 	http.HandleFunc("/echo", echo) //this request comes from webrtc.html
