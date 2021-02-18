@@ -10,7 +10,7 @@ This code is structured with main.go being the web server/ webrtc client and ind
 You will need to add your public IP or domain name of the location you're hosting the web server (main.go) at to the `New Websocket` line in index.html.
 Next you can add any game code you'd like to index.html, or a seperate .js file.
 Send no-retransmit, but ordered, game state updates across the network to browser clients using the `dataChannel.SendText` or `dataChannel.Send` methods in main.go.
-To receive client actions I chose to create another datachannel with ordered messages and retransmits enabled to be able to receive reliable messages from clients.
+To receive client actions I chose to create another datachannel with ordered messages and retransmits enabled to be able to receive reliable messages from clients. \n
 (No one wants to have guess if pressing right on their controller will actually make their character move right :P)
 *Right now the reliable channel is under `reliableChannel` in main.go and `TCPChan` in index.html, imma change that tommorrow to be the same across the board
 
