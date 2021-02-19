@@ -131,7 +131,10 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	// Register channel opening handling
 	reliableChannel.OnOpen(func() {
 
-			//sendErr := reliableChannel.SendText(strconv.Itoa(message)) //make new byte slice with message as the only field
+			sendErr := reliableChannel.SendText(playerTag) //make new byte slice with message as the only field
+			if sendErr != nil {
+				panic(err)
+			}
 
 
 	})

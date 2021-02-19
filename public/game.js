@@ -1,3 +1,6 @@
+
+//Animation and game updates will be triggered once connection made in index.hmtl
+
 var animate = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function (callback) {
         window.setTimeout(callback, 1000/60)
     };
@@ -22,6 +25,20 @@ var render = function () {
    context.fillStyle = "#000000";                 //Example of Drawing a screen & below some text to the canvas
    context.fillRect(0, 0, width, height);
 
+   //Draw Players
+   var tempX;
+
+   for (var key in Updates) {     //Updates defined in index.html
+      if (Updates.hasOwnProperty(key) && key.includes("X") )  {  //Is X value?
+          tempX = Updates[key];
+      }else{                                 //Else must have X and Y, so draw
+        context.fillStyle = "#FF00FF";
+        context.fillRect(tempX, Updates[key], 50, 50);
+        console.log(tempX + " " + Updates[key])
+      }
+   }
+
+   //Local Player
    context.fillStyle = "#F7FF0F";   //yellow
    context.fillRect(playerX, playerY, 50, 50);
    //context.drawImage(pew, playerX, playerY, 200, 100, 100,100,50,50);
@@ -78,7 +95,7 @@ for(var key in keysDown) {
 
 
 document.body.appendChild(canvas);
-animate(step);
+
 
 
 window.addEventListener("keydown", function (event) {

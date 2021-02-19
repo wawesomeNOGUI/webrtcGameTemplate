@@ -10,9 +10,14 @@ Message: <textarea id="message">This is my DataChannel message!</textarea> <br/>
 <script src="game.js"></script>
 
 <script>
-//=======================Global DataChannel Vars================================
+//=======================Global Vars================================
+  //Data Channels
   var UDPChan;
   var TCPChan;
+
+  //Player Vars
+  var playerTag;
+  var Updates;
 //==============================================================================
 </script>
 
@@ -55,7 +60,12 @@ window.addEventListener("load", function(evt) {
   var sends = 0;
 
   pc.onsignalingstatechange = e => console.log(pc.signalingState)
-  pc.oniceconnectionstatechange = e => console.log(pc.iceConnectionState)
+  pc.oniceconnectionstatechange = e => {
+    console.log(pc.iceConnectionState)
+    if (pc.iceConnectionState == "connected"){
+      animate(step); //start client side loop in game.js
+    }
+  }
   pc.onicecandidate = event => {
     if(sends == 0){
       //Send the original SDP, we'll send additional ice candidates from the
@@ -93,6 +103,7 @@ window.addEventListener("load", function(evt) {
 
           UDPChan.onmessage = function(e){
             numMessages++;
+            Updates = JSON.parse(e.data);
             console.log(e.data);
           }
 
@@ -104,7 +115,10 @@ window.addEventListener("load", function(evt) {
           console.log("\n");
           TCPChan.onclose = () => console.log(TCPChan.label + ' has closed');
           TCPChan.onopen = () => console.log(TCPChan.label + ' has opened');
-          TCPChan.onmessage = function(e){};
+          TCPChan.onmessage = function(e){
+            //The first message is expexted to be the player tag
+            playerTag = e.data;
+          };
 
           window.sendMessage = () => {
             let message = document.getElementById('message').value
