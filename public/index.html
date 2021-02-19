@@ -104,7 +104,7 @@ window.addEventListener("load", function(evt) {
           UDPChan.onmessage = function(e){
             numMessages++;
             Updates = JSON.parse(e.data);
-            console.log(e.data);
+            //console.log(e.data);
           }
 
         }else if(e.channel.label == "TCP"){

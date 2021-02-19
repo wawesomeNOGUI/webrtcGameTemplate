@@ -34,7 +34,7 @@ var render = function () {
       }else{                                 //Else must have X and Y, so draw
         context.fillStyle = "#FF00FF";
         context.fillRect(tempX, Updates[key], 50, 50);
-        console.log(tempX + " " + Updates[key])
+        //console.log(tempX + " " + Updates[key])
       }
    }
 

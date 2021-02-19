@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 	"sync"
-	"reflect"
+	//"reflect"
 	//"encoding/binary"
 
 	"github.com/gorilla/websocket"
@@ -105,8 +105,8 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Data channel '%s'-'%d' open. Random messages will now be sent to any connected DataChannels\n", dataChannel.Label(), dataChannel.ID())
 
 		for {
-			//time.Sleep(time.Millisecond*50) //50 milliseconds = 20 updates per second
-			time.Sleep(time.Second)
+			time.Sleep(time.Millisecond*50) //50 milliseconds = 20 updates per second
+			//time.Sleep(time.Second)
 
 
 			//fmt.Println(UpdatesString)
@@ -150,14 +150,14 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				if err != nil{
 					fmt.Println(err)
 				}
-			fmt.Println(reflect.TypeOf(temp))
+			//fmt.Println(reflect.TypeOf(temp))
 			Updates.Store( playerTag + "X", temp )
 		}else if msg.Data[0] == 89 {  //89 = "Y"
 		 temp, err := strconv.Atoi( string(msg.Data[1:]) );
 				if err != nil{
 					fmt.Println(err)
 				}
-			fmt.Println(temp)
+			//fmt.Println(temp)
 			Updates.Store( playerTag + "Y", temp )
 		}
 	})
