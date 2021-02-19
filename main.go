@@ -77,6 +77,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Set the handler for ICE connection state
+
 	// This will notify you when the peer has connected/disconnected
 	peerConnection.OnICEConnectionStateChange(func(connectionState webrtc.ICEConnectionState) {
 		fmt.Printf("ICE Connection State has changed: %s\n", connectionState.String())
@@ -85,7 +86,8 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		if connectionState == 3 {
 			//Store a new x and y for this player
 			NumberOfPlayers++
-			playerTag = string(NumberOfPlayers)
+			playerTag = strconv.Itoa(NumberOfPlayers)
+			fmt.Println(playerTag)
 			x := playerTag + "X"
 			y := playerTag + "Y"
 			Updates.Store(x, 0)
@@ -103,16 +105,13 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Data channel '%s'-'%d' open. Random messages will now be sent to any connected DataChannels\n", dataChannel.Label(), dataChannel.ID())
 
 		for {
-			time.Sleep(time.Millisecond*50) //50 milliseconds = 20 updates per second
+			//time.Sleep(time.Millisecond*50) //50 milliseconds = 20 updates per second
+			time.Sleep(time.Second)
 
-			//Turn Updates sync.Map into a JSON encoded byte slice []byte
-			jsonUpdates, err := json.Marshal(Updates)
-			if err != nil {
-				panic(err)
-			}
 
-			// Send the message as text
-			sendErr := dataChannel.Send(jsonUpdates) //make new byte slice with message as the only field
+			//fmt.Println(UpdatesString)
+			// Send the message as text so we can JSON.parse in javascript
+			sendErr := dataChannel.SendText(UpdatesString)
 			if sendErr != nil {
 				fmt.Println("data send err", sendErr)
 				break
@@ -239,14 +238,36 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 }
 
-//WEBRTC connection made!
+//We'll have this marshalling function here so the multiple gorutines for each
+//player will not be inefficient by all trying to marshall the same thing
+func getSyncMapReadyForSending(m *sync.Map){
+	for{
+		time.Sleep(time.Millisecond*50)
+
+		tmpMap := make(map[string]int)
+    m.Range(func(k, v interface{}) bool {
+        tmpMap[k.(string)] = v.(int)
+        return true
+    })
+
+    jsonTemp, err := json.Marshal(tmpMap)
+		if err != nil{
+			panic(err)
+		}
+
+		UpdatesString = string(jsonTemp)
+	}
+}
+
 
 //Updates Map
 var Updates sync.Map
+var UpdatesString string
 var NumberOfPlayers int
 
 func main() {
 
+	go getSyncMapReadyForSending(&Updates)
 
 	fileServer := http.FileServer(http.Dir("./public"))
 	http.HandleFunc("/echo", echo) //this request comes from webrtc.html
