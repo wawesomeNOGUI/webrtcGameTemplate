@@ -94,12 +94,14 @@ window.addEventListener("load", function(evt) {
           UDPChan.onmessage = function(e){
               numMessages++;
               //log(`Message from DataChannel '${UDPChan.label}' payload '${e.data}'`)
+              /*
               if(e.data - previousData != 1){
                 console.log("Unordered or lostData!")
                 console.log(previousData)
                 console.log(e.data)
               }
               previousData = e.data;
+              */
           }
 
         }else if(e.channel.label == "TCP"){

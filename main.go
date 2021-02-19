@@ -102,15 +102,17 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	dataChannel.OnOpen(func() {
 		fmt.Printf("Data channel '%s'-'%d' open. Random messages will now be sent to any connected DataChannels\n", dataChannel.Label(), dataChannel.ID())
 
-		var message int
-
 		for {
-			time.Sleep(time.Second) //50 nanoseconds
-			message++      //add 1 to message
-			//fmt.Printf("Sending '%s'\n", message)
+			time.Sleep(time.Millisecond*50) //50 milliseconds = 20 updates per second
+
+			//Turn Updates sync.Map into a JSON encoded byte slice []byte
+			jsonUpdates, err := json.Marshal(Updates)
+			if err != nil {
+				panic(err)
+			}
 
 			// Send the message as text
-			sendErr := dataChannel.SendText(strconv.Itoa(message)) //make new byte slice with message as the only field
+			sendErr := dataChannel.Send(jsonUpdates) //make new byte slice with message as the only field
 			if sendErr != nil {
 				fmt.Println("data send err", sendErr)
 				break
@@ -218,6 +220,8 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 		//If staement to make sure we aren't adding websocket error messages to ICE
 		if message[0] == leftBracket {
+			//Take []byte and turn it into a struct of type webrtc.ICECandidateInit
+			//(declared above as trickleCandidate)
 			err := json.Unmarshal(message, &trickleCandidate)
 			if err != nil {
 				fmt.Println("errorUnmarshal:", err)
