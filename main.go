@@ -105,8 +105,8 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Data channel '%s'-'%d' open. Random messages will now be sent to any connected DataChannels\n", dataChannel.Label(), dataChannel.ID())
 
 		for {
-			time.Sleep(time.Millisecond*50) //50 milliseconds = 20 updates per second
-			//time.Sleep(time.Second)
+			time.Sleep(time.Millisecond*20) //50 milliseconds = 20 updates per second
+			                                //20 milliseconds = ~60 updates per second
 
 
 			//fmt.Println(UpdatesString)
@@ -131,7 +131,8 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	// Register channel opening handling
 	reliableChannel.OnOpen(func() {
 
-			sendErr := reliableChannel.SendText(playerTag) //make new byte slice with message as the only field
+			//Send Client their playerTag so they know who they are in the Updates Array
+			sendErr := reliableChannel.SendText(playerTag)
 			if sendErr != nil {
 				panic(err)
 			}
