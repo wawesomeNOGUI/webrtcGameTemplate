@@ -5,8 +5,8 @@ var animate = window.requestAnimationFrame || window.webkitRequestAnimationFrame
         window.setTimeout(callback, 1000/60)
     };
 var canvas = document.createElement("canvas");
-var width = 1000;
-var height = 700;
+var width = 500;
+var height = 500;
 canvas.width = width;
 canvas.height = height;
 var context = canvas.getContext('2d');
