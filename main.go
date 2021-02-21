@@ -246,7 +246,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 //player will not be inefficient by all trying to marshall the same thing
 func getSyncMapReadyForSending(m *sync.Map){
 	for{
-		time.Sleep(time.Millisecond*50)
+		time.Sleep(time.Millisecond)
 
 		tmpMap := make(map[string]int)
     m.Range(func(k, v interface{}) bool {

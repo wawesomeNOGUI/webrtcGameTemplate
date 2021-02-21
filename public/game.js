@@ -22,7 +22,7 @@ var playerY = 0;
 
 var render = function () {
 
-   context.fillStyle = "#000000";                 //Example of Drawing a screen & below some text to the canvas
+   context.fillStyle = "#000000";
    context.fillRect(0, 0, width, height);
 
    //Draw Players
@@ -31,7 +31,7 @@ var render = function () {
    for (var key in Updates) {     //Updates defined in index.html
       if (Updates.hasOwnProperty(key) && key.includes("X") )  {  //Is X value?
           tempX = Updates[key];
-      }else{                                 //Else must have X and Y, so draw
+      }else if (key != playerTag + "Y"){      //Else must have X and Y, so draw
         context.fillStyle = "#FF00FF";
         context.fillRect(tempX, Updates[key], 50, 50);
         //console.log(tempX + " " + Updates[key])
