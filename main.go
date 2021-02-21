@@ -88,13 +88,13 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			NumberOfPlayers++
 			playerTag = strconv.Itoa(NumberOfPlayers)
 			fmt.Println(playerTag)
-			x := playerTag + "X"
-			y := playerTag + "Y"
-			Updates.Store(x, 0)
-			Updates.Store(y, 0)
+
+			//Store a slice for player x, y, and other data
+			//Initially we'll just have starting x and y values
+			Updates.Store(playerTag, []int{0, 0})
+
 		}else if connectionState == 5 || connectionState == 6 || connectionState == 7{
-			Updates.Delete(playerTag + "X")
-			Updates.Delete(playerTag + "Y")
+			Updates.Delete(playerTag)
 			fmt.Println("Deleted Player")
 		}
 	})
@@ -147,19 +147,31 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 		//fmt.Println(msg.Data)
 		if msg.Data[0] == 88 {   //88 = "X"
-			temp, err := strconv.Atoi( string(msg.Data[1:]) );
+			x, err := strconv.Atoi( string(msg.Data[1:]) );
 				if err != nil{
 					fmt.Println(err)
 				}
-			//fmt.Println(reflect.TypeOf(temp))
-			Updates.Store( playerTag + "X", temp )
+
+				playerSlice, ok := Updates.Load(playerTag)
+				if ok == false {
+					fmt.Println("Uh oh")
+				}
+
+				playerSlice.([]int)[0] = x
+				Updates.Store( playerTag, playerSlice )
 		}else if msg.Data[0] == 89 {  //89 = "Y"
-		 temp, err := strconv.Atoi( string(msg.Data[1:]) );
+		 y, err := strconv.Atoi( string(msg.Data[1:]) );
 				if err != nil{
 					fmt.Println(err)
 				}
-			//fmt.Println(temp)
-			Updates.Store( playerTag + "Y", temp )
+
+			playerSlice, ok := Updates.Load(playerTag)
+			if ok == false {
+				fmt.Println("Uh oh")
+			}
+
+			playerSlice.([]int)[1] = y
+			Updates.Store( playerTag, playerSlice )
 		}
 	})
 
@@ -248,9 +260,9 @@ func getSyncMapReadyForSending(m *sync.Map){
 	for{
 		time.Sleep(time.Millisecond)
 
-		tmpMap := make(map[string]int)
+		tmpMap := make(map[string][]int)
     m.Range(func(k, v interface{}) bool {
-        tmpMap[k.(string)] = v.(int)
+        tmpMap[k.(string)] = v.([]int)
         return true
     })
 

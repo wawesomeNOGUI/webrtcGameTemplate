@@ -18,6 +18,7 @@ Message: <textarea id="message">This is my DataChannel message!</textarea> <br/>
   //Player Vars
   var playerTag;
   var Updates;
+  var previousUpdates;
 //==============================================================================
 </script>
 
@@ -27,7 +28,7 @@ var ws;
 
 
 window.addEventListener("load", function(evt) {
-  ws = new WebSocket("ws://192.168.1.71:80/echo");  //address to connect to, /echo triggers go echo function
+  ws = new WebSocket("ws://192.168.1.71:80/echo");  //Local address to connect to
 
   ws.onopen = function(evt) {
       console.log("OPEN");
@@ -103,6 +104,8 @@ window.addEventListener("load", function(evt) {
 
           UDPChan.onmessage = function(e){
             numMessages++;
+            //Save previous update to use for entity interpolation
+            previousUpdates = Updates;
             Updates = JSON.parse(e.data);
             //console.log(e.data);
           }

@@ -29,11 +29,9 @@ var render = function () {
    var tempX;
 
    for (var key in Updates) {     //Updates defined in index.html
-      if (Updates.hasOwnProperty(key) && key.includes("X") )  {  //Is X value?
-          tempX = Updates[key];
-      }else if (key != playerTag + "Y"){      //Else must have X and Y, so draw
+      if (Updates.hasOwnProperty(key))  {
         context.fillStyle = "#FF00FF";
-        context.fillRect(tempX, Updates[key], 50, 50);
+        context.fillRect(Updates[key][0], Updates[key][1], 50, 50);
         //console.log(tempX + " " + Updates[key])
       }
    }
