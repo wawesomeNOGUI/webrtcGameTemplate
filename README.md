@@ -16,6 +16,16 @@ To receive client actions I chose to create another datachannel with ordered mes
 (No one wants to have guess if pressing right on their controller will actually make their character move right :P)
 *Right now the reliable channel is under `reliableChannel` in main.go and `TCPChan` in index.html, imma change that tommorrow to be the same across the board
 
+# How To Build
+- You need to first install [golang](https://golang.org/)
+- Next make sure you have at least golang 1.15 by running `go version`
+- Then git clone, or download this repository and place it inside your GOPATH
+  (You can find your GOPATH by executing `go env`)
+- Next enter:
+  - `set GO111MODULE=on` for windows
+  - `export GO111MODULW=on` for linux or mac
+- Finally navigate inside the downloaded repository and run `go build` which will produce the binary server file for you to run!
+
 # Librarys Used
 Thank you to:
 - [Pion](https://pion.ly/)
