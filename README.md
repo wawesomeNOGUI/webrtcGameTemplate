@@ -21,6 +21,7 @@ To receive client actions I chose to create another datachannel with ordered mes
 - Next make sure you have at least golang 1.15 by running `go version`
 - Then git clone, or download this repository and place it inside your GOPATH
   (You can find your GOPATH by executing `go env`)
+- Next navigate inside the repository folder in shell and type `go mod init github.com/<your user>`
 - Next enter:
   - `set GO111MODULE=on` for windows
   - `export GO111MODULW=on` for linux or mac
