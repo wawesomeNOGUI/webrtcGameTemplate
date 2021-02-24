@@ -1,5 +1,5 @@
 # WebRTCGame
-A template for making real time online games with web browsers as clients and a pion backend as a server.
+A template for making real time online games with a server-client structure, web browsers as clients and a pion backend as a server.
 
 The biggest challenge with making real time online browser games (AKA .io games) is that there is no way to send an arbitray UDP packet to a browser client.
 WebRTC solves this problem by allowing you to make a secure connection between browser clients and a [pion](https://pion.ly/) client and then send packets acting exactly like UDP between them.
