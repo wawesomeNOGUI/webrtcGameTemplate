@@ -28,7 +28,7 @@ var ws;
 
 
 window.addEventListener("load", function(evt) {
-  ws = new WebSocket("ws://serverIpHere:80/echo");  //address to connect to, /echo triggers go echo function
+  ws = new WebSocket("ws://serverIPHere:80/echo");  //address to connect to, /echo triggers go echo function
 
   ws.onopen = function(evt) {
       console.log("OPEN");
