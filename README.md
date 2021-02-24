@@ -7,7 +7,7 @@ Unordered, unreliable SCTP packets will behave exactly like vanilla UDP, but wit
 
 # How to Use This Code
 This code is structured with main.go being the web server/ webrtc client and index.html in the public folder being the web client.
-You will need to add your public IP or domain name of the location you're hosting the web server (main.go) at to the `New Websocket` line in index.html.
+You will need to add your public IP or domain name of the location you're hosting the web server (main.go) at to the `New Websocket` line in index.html, [link](https://github.com/wawesomeNOGUI/webrtcGameTemplate/blob/d295837db00cee0f7f999ff949d708660fe523b0/public/index.html#L31).
 Next you can add any game code you'd like to index.html, or a seperate .js file.
 
 Send no-retransmit, but ordered, game state updates across the network to browser clients using the `dataChannel.SendText` or `dataChannel.Send` methods in main.go.
