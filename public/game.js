@@ -72,13 +72,13 @@ for(var key in keysDown) {
      playerX = playerX - 4;
      TCPChan.send("X" + playerX);
 	    //Put stuff for keypress to activate here
-   } else if(value == 39){  //38 = right
+   } else if(value == 39){  //39 = right
      playerX = playerX + 4;
      TCPChan.send("X" + playerX);
    } else if(value == 40){  //40 = down
      playerY = playerY + 4;
      TCPChan.send("Y" + playerY);
-   } else if(value == 38){  //39 = up
+   } else if(value == 38){  //38 = up
      playerY = playerY - 4;
      TCPChan.send("Y" + playerY);
    }
