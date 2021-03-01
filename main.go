@@ -96,6 +96,11 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		}else if connectionState == 5 || connectionState == 6 || connectionState == 7{
 			Updates.Delete(playerTag)
 			fmt.Println("Deleted Player")
+
+			err := peerConnection.Close()  //deletes all references to this peerconnection in mem and same for ICE agent (ICE agent releases the "closed" status)
+			if err != nil {							   //https://www.w3.org/TR/webrtc/#dom-rtcpeerconnection-close
+				fmt.Println(err)
+			}
 		}
 	})
 
@@ -105,7 +110,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Data channel '%s'-'%d' open. Random messages will now be sent to any connected DataChannels\n", dataChannel.Label(), dataChannel.ID())
 
 		for {
-			time.Sleep(time.Millisecond*20) //50 milliseconds = 20 updates per second
+			time.Sleep(time.Millisecond*50) //50 milliseconds = 20 updates per second
 			                                //20 milliseconds = ~60 updates per second
 
 
