@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 	"sync"
+	"time"
 	//"reflect"
 	//"encoding/binary"
 
@@ -93,26 +93,25 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			//Initially we'll just have starting x and y values
 			Updates.Store(playerTag, []int{0, 0})
 
-		}else if connectionState == 5 || connectionState == 6 || connectionState == 7{
+		} else if connectionState == 5 || connectionState == 6 || connectionState == 7 {
 			Updates.Delete(playerTag)
 			fmt.Println("Deleted Player")
 
-			err := peerConnection.Close()  //deletes all references to this peerconnection in mem and same for ICE agent (ICE agent releases the "closed" status)
-			if err != nil {							   //https://www.w3.org/TR/webrtc/#dom-rtcpeerconnection-close
+			err := peerConnection.Close() //deletes all references to this peerconnection in mem and same for ICE agent (ICE agent releases the "closed" status)
+			if err != nil {               //https://www.w3.org/TR/webrtc/#dom-rtcpeerconnection-close
 				fmt.Println(err)
 			}
 		}
 	})
 
-//====================No retransmits, ordered dataChannel=======================
+	//====================No retransmits, ordered dataChannel=======================
 	// Register channel opening handling
 	dataChannel.OnOpen(func() {
 		fmt.Printf("Data channel '%s'-'%d' open. Random messages will now be sent to any connected DataChannels\n", dataChannel.Label(), dataChannel.ID())
 
 		for {
-			time.Sleep(time.Millisecond*50) //50 milliseconds = 20 updates per second
-			                                //20 milliseconds = ~60 updates per second
-
+			time.Sleep(time.Millisecond * 50) //50 milliseconds = 20 updates per second
+			//20 milliseconds = ~60 updates per second
 
 			//fmt.Println(UpdatesString)
 			// Send the message as text so we can JSON.parse in javascript
@@ -130,18 +129,17 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Message from DataChannel '%s': '%s'\n", dataChannel.Label(), string(msg.Data))
 	})
 
-//==============================================================================
+	//==============================================================================
 
-//=========================Reliable DataChannel=================================
+	//=========================Reliable DataChannel=================================
 	// Register channel opening handling
 	reliableChannel.OnOpen(func() {
 
-			//Send Client their playerTag so they know who they are in the Updates Array
-			sendErr := reliableChannel.SendText(playerTag)
-			if sendErr != nil {
-				panic(err)
-			}
-
+		//Send Client their playerTag so they know who they are in the Updates Array
+		sendErr := reliableChannel.SendText(playerTag)
+		if sendErr != nil {
+			panic(err)
+		}
 
 	})
 
@@ -151,24 +149,24 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		//fmt.Printf("Message from DataChannel '%s': '%s'\n", reliableChannel.Label(), string(msg.Data))
 
 		//fmt.Println(msg.Data)
-		if msg.Data[0] == 88 {   //88 = "X"
-			x, err := strconv.Atoi( string(msg.Data[1:]) );
-				if err != nil{
-					fmt.Println(err)
-				}
+		if msg.Data[0] == 88 { //88 = "X"
+			x, err := strconv.Atoi(string(msg.Data[1:]))
+			if err != nil {
+				fmt.Println(err)
+			}
 
-				playerSlice, ok := Updates.Load(playerTag)
-				if ok == false {
-					fmt.Println("Uh oh")
-				}
+			playerSlice, ok := Updates.Load(playerTag)
+			if ok == false {
+				fmt.Println("Uh oh")
+			}
 
-				playerSlice.([]int)[0] = x
-				Updates.Store( playerTag, playerSlice )
-		}else if msg.Data[0] == 89 {  //89 = "Y"
-		 y, err := strconv.Atoi( string(msg.Data[1:]) );
-				if err != nil{
-					fmt.Println(err)
-				}
+			playerSlice.([]int)[0] = x
+			Updates.Store(playerTag, playerSlice)
+		} else if msg.Data[0] == 89 { //89 = "Y"
+			y, err := strconv.Atoi(string(msg.Data[1:]))
+			if err != nil {
+				fmt.Println(err)
+			}
 
 			playerSlice, ok := Updates.Load(playerTag)
 			if ok == false {
@@ -176,11 +174,11 @@ func echo(w http.ResponseWriter, r *http.Request) {
 			}
 
 			playerSlice.([]int)[1] = y
-			Updates.Store( playerTag, playerSlice )
+			Updates.Store(playerTag, playerSlice)
 		}
 	})
 
-//==============================================================================
+	//==============================================================================
 
 	// Create an offer to send to the browser
 	offer, err := peerConnection.CreateOffer(nil)
@@ -261,25 +259,24 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 //We'll have this marshalling function here so the multiple gorutines for each
 //player will not be inefficient by all trying to marshall the same thing
-func getSyncMapReadyForSending(m *sync.Map){
-	for{
+func getSyncMapReadyForSending(m *sync.Map) {
+	for {
 		time.Sleep(time.Millisecond)
 
 		tmpMap := make(map[string][]int)
-    m.Range(func(k, v interface{}) bool {
-        tmpMap[k.(string)] = v.([]int)
-        return true
-    })
+		m.Range(func(k, v interface{}) bool {
+			tmpMap[k.(string)] = v.([]int)
+			return true
+		})
 
-    jsonTemp, err := json.Marshal(tmpMap)
-		if err != nil{
+		jsonTemp, err := json.Marshal(tmpMap)
+		if err != nil {
 			panic(err)
 		}
 
 		UpdatesString = string(jsonTemp)
 	}
 }
-
 
 //Updates Map
 var Updates sync.Map
