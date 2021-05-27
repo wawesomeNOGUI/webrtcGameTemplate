@@ -14,7 +14,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/pion/webrtc/v3"
-	"github.com/wawesomeNOGUI/webrtcGamerServer/internal/signal"
+	"github.com/wawesomeNOGUI/webrtcGameTemplate/internal/signal"
 )
 
 var upgrader = websocket.Upgrader{
