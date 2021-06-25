@@ -5,6 +5,8 @@ The biggest challenge with making real time online browser games (AKA .io games)
 WebRTC solves this problem by allowing you to make a secure connection between browser clients and a [pion](https://pion.ly/) client and then send packets acting exactly like UDP between them.
 Unordered, unreliable SCTP packets will behave exactly like vanilla UDP, but with encryption. In this example, we will be using an unreliable, **ordered** SCTP packets. We will include the ordered tag in the datachannel because any packets received older than the last packet received will be dropped, allowing every client the ability to assume every message received is the most recent update from the server.
 
+For player controls we send what the client does to the server reliably (SCTP acting like TCP), so every player action can be taken into account by the server without any dropped messages.
+
 # How to Use This Code
 This code is structured with main.go being the web server/ webrtc client and index.html in the public folder being the web client.
 You will need to add your public IP or domain name of the location you're hosting the web server (main.go) at to the `New Websocket` line in index.html, [link](https://github.com/wawesomeNOGUI/webrtcGameTemplate/blob/d295837db00cee0f7f999ff949d708660fe523b0/public/index.html#L31). You'll also need to add the IP of your server in main.go [here](https://github.com/wawesomeNOGUI/webrtcGameTemplate/blob/b729c0f31b376b70ee5d6554f5fb4044ba09d60e/main.go#L298). e.g `settingEngine.SetNAT1To1IPs([]string{"172.16.0.0"}, webrtc.ICECandidateTypeHost)`. (But leaving the IP line in main.go as is will default to using your link-local address.)
