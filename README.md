@@ -9,13 +9,13 @@ For player controls we send what the client does to the server reliably (SCTP ac
 
 # How to Use This Code
 This code is structured with main.go being the web server/ webrtc client and index.html in the public folder being the web client.
-You will need to add your public IP or domain name of the location you're hosting the web server (main.go) at to the `New Websocket` line in index.html, [link](https://github.com/wawesomeNOGUI/webrtcGameTemplate/blob/d295837db00cee0f7f999ff949d708660fe523b0/public/index.html#L31). You'll also need to add the IP of your server in main.go [here](https://github.com/wawesomeNOGUI/webrtcGameTemplate/blob/b729c0f31b376b70ee5d6554f5fb4044ba09d60e/main.go#L298). e.g `settingEngine.SetNAT1To1IPs([]string{"172.16.0.0"}, webrtc.ICECandidateTypeHost)`. (But leaving the IP line in main.go as is will default to using your link-local address.)
+You will need to add your public IP or domain name of the location you're hosting the web server (main.go) at to the `New Websocket` line in index.html, [link](https://github.com/wawesomeNOGUI/webrtcGameTemplate/blob/81adbc8efa806678abe4b296b417c00eae7f6ac7/public/index.html#L31). You'll also need to add the IP of your server in main.go [here](https://github.com/wawesomeNOGUI/webrtcGameTemplate/blob/b729c0f31b376b70ee5d6554f5fb4044ba09d60e/main.go#L298). e.g `settingEngine.SetNAT1To1IPs([]string{"172.16.0.0"}, webrtc.ICECandidateTypeHost)`. (But leaving the IP line in main.go as is will default to using your link-local address.)
 Next you can add any game code you'd like to index.html, or a seperate .js file.
 
 Send no-retransmit, but ordered, game state updates across the network to browser clients using the `dataChannel.SendText` or `dataChannel.Send` methods in main.go.
 
 To receive client actions I chose to create another datachannel with ordered messages and retransmits enabled to be able to receive reliable messages from clients.
-(No one wants to have guess if pressing right on their controller will actually make their character move :P)
+(No one wants to have to guess if pressing right on their controller will actually make their character move :P)
 
 Also I added an example of how to do entity interpolation client side in public/interpolationExample. This example just takes each update from the server, saves a copy of the previous update, and divides how much the players have moved by a specified number (`interpolationFrames` in index.html). Then the quotient is used to move the player square only that much each render, for the specified amount of frames, `interpolationFrames`, creating smoother movement to the actual update positions.
 
