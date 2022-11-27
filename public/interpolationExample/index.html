@@ -7,6 +7,8 @@
 Message: <textarea id="message">This is my DataChannel message!</textarea> <br/>
 <button onclick="window.sendMessage()"> Send Message </button> <br />
 
+<script src="game.js"></script>
+<script src="util.js"></script>
 
 <script>
 //=======================Global Vars================================
@@ -18,13 +20,10 @@ Message: <textarea id="message">This is my DataChannel message!</textarea> <br/>
   var playerTag;
   var Updates;
   var previousUpdates;
-  var interpolation;   //will contain an object describing how much to interpolate each frame
-  var interpolateFrames = 4;
+  var interpolateInc = 0.1;
+  var t = 0;
 //==============================================================================
 </script>
-
-
-<script src="game.js"></script>
 
 <script>
 
@@ -32,7 +31,7 @@ var ws;
 
 
 window.addEventListener("load", function(evt) {
-  ws = new WebSocket("ws://serverIPHere:80/echo");  //address to connect to, /echo triggers go echo function
+  ws = new WebSocket("ws://127.0.0.1:80/echo");  //address to connect to, /echo triggers go echo function
 
   ws.onopen = function(evt) {
       console.log("OPEN");
@@ -76,7 +75,7 @@ window.addEventListener("load", function(evt) {
       //Send the original SDP, we'll send additional ice candidates from the
       //onicecandidate event handler (trickle ICE)
       ws.send( btoa(JSON.stringify(pc.localDescription)) )
-      console.log(pc.LocalDescription)
+      console.log(pc.localDescription)
 
       sends = 1
     }
@@ -109,32 +108,11 @@ window.addEventListener("load", function(evt) {
           UDPChan.onmessage = function(e){
             numMessages++;
             //Save previous update to use for entity interpolation
-            if (Updates != undefined){
-              previousUpdates = JSON.parse(JSON.stringify(Updates));
-            }
+            previousUpdates = Updates;
             Updates = JSON.parse(e.data);
-
-
-            //Fill the interpolation object with how much to interpolate each frame
-            interpolation = JSON.parse(JSON.stringify(Updates));;
-
-            if(previousUpdates != undefined && Updates != undefined && Object.keys(previousUpdates).length == Object.keys(Updates).length){
-
-              for (var key in interpolation) {
-
-                var tempX = Updates[key][0] - previousUpdates[key][0];
-                tempX = tempX/interpolateFrames;
-                interpolation[key][0] = tempX;
-
-                var tempY = Updates[key][1] - previousUpdates[key][1];
-                tempY = tempY/interpolateFrames;
-                interpolation[key][1] = tempY;
-
-              }
-            }
-
-            interpolateCounter = 0;  //Give the ok to render in game.js
-
+            
+            // reset interpolation step
+            t = 0;
           }
 
         }else if(e.channel.label == "TCP"){

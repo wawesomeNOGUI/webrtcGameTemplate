@@ -19,47 +19,27 @@ var keysDown = {};     //This creates var for keysDown event
 var playerX = 0;
 var playerY = 0;
 
-var interpolateCounter = 0;
 
 var render = function () {
+  context.fillStyle = "#000000";
+  context.fillRect(0, 0, width, height);
 
-   //Draw Background
-   context.fillStyle = "#000000";
-   context.fillRect(0, 0, width, height);
+  //Draw Players
+  t += interpolateInc;
 
-   //Draw Players
-   if(interpolation != undefined && previousUpdates != undefined && Updates != undefined && interpolateCounter >= 0 && Object.keys(previousUpdates).length == Object.keys(Updates).length){
+  for (var key in Updates) {     //Updates defined in index.html
+    if (Updates.hasOwnProperty(key) && key != playerTag && previousUpdates != undefined && previousUpdates.hasOwnProperty(key)) {
+      var x = smoothstep(previousUpdates[key][0], Updates[key][0], t);
+      var y = smoothstep(previousUpdates[key][1], Updates[key][1], t);
 
-     for (var key in interpolation) {     //interpolation defined in index.html
-        if (interpolation.hasOwnProperty(key))  {
-          context.fillStyle = "#FF00FF";
-          context.fillRect(previousUpdates[key][0] + interpolation[key][0]*interpolateCounter, previousUpdates[key][1] + interpolation[key][1]*interpolateCounter, 50, 50);
-          //console.log(previousUpdates[key][0] + interpolation[key][0]*interpolateCounter)
-        }
-     }
+      context.fillStyle = "#FF00FF";
+      context.fillRect(x, y, 50, 50);
+    }
+  }
 
-     if(interpolateCounter < interpolateFrames ){
-       interpolateCounter++;
-     }else{
-       interpolateCounter = -1;
-     }
-
-   }else{
-     for (var key in Updates) {     //Updates defined in index.html
-        if (Updates.hasOwnProperty(key))  {
-          context.fillStyle = "#FF00FF";
-          context.fillRect(Updates[key][0], Updates[key][1], 50, 50);
-          //console.log("oh dear")
-        }
-     }
-   }
-
-   //Local Player
-   context.fillStyle = "#F7FF0F";   //yellow
-   context.fillRect(playerX, playerY, 50, 50);
-   //context.drawImage(pew, playerX, playerY, 200, 100, 100,100,50,50);
-  //context.drawImage(pew, playerX, playerY, 200, 100);
-
+  //Local Player
+  context.fillStyle = "#F7FF0F";   //yellow
+  context.fillRect(playerX, playerY, 50, 50);
 };
 
 
